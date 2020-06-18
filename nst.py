@@ -30,7 +30,7 @@ def deprocess(x):
     return x
 
 
-def save_image(image, content_path, style_path):
+def save_image(image):
     if len(image.shape) == 4:
         img = squeeze(image, axis = 0)
 
@@ -38,7 +38,7 @@ def save_image(image, content_path, style_path):
     im = fromarray(img)
     filename = "final" + str(randint(10001, 999999)) + ".png"
     im.save('./static/'+filename)
-    return content_path, style_path, filename
+    return filename
 
 
 style_layers = ['block1_conv1',  'block3_conv1', 'block5_conv1']
@@ -78,13 +78,14 @@ def style_cost(style, generated):
 
 generated_images = []
 
-def training_loop(content_path, style_path, iterations=5, a=10., b=20.):
+def training_loop(content_path, style_path, iterations=20, a=10., b=20.):
 
     content = load_and_process_image(content_path)
     style = load_and_process_image(style_path)
     generated = tf.Variable(content, dtype=tf.float32)
 
     opt = tf.keras.optimizers.Adam(learning_rate=7.)
+    # opt = tf.optimizers.Adam(learning_rate=0.02, beta_1=0.99, epsilon=1e-1)
 
     best_cost = 1e12+0.1
     best_image = None
@@ -109,8 +110,9 @@ def training_loop(content_path, style_path, iterations=5, a=10., b=20.):
         time_taken = time.time() - start_time
         print('>>> Cost at {}: {}. Time elapsed: {}'.format(i, J_total, time_taken))
         generated_images.append(generated.numpy())
-        yield ('Cost at {}: {}. Time elapsed: {}'.format(i, J_total, time_taken))
+        # yield ('Cost at {}: {}. Time elapsed: {}'.format(i, J_total, time_taken))
+        yield i
     
-    path = save_image(best_image, content_path, style_path)
+    path = save_image(best_image)
     print(">>>", path)
     yield (path)

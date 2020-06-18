@@ -63,14 +63,30 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col s12 center">
+                    <div class="col s6 center">
+                        <div class="input-field col s12">
+                            <select id="iterations" name="iterations">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                            </select>
+                            <label>Select Epochs</label>
+                        </div>
+                    </div>
+                    <div class="col s16 center">
                         <input type="submit" value="Generate Image" class="btn grey darken-3">
                     </div>
                 </div>
             </form>
         </div>
         <div class="section">
-            <ul class="collections" id="append-here"></ul>
+            <label for="">Training Progress : <span id="change"></span></label>
+            <div class="progress">
+                <div class="determinate" style="width: 0%"></div>
+            </div>
         </div>
     </main>
     <footer class="page-footer grey darken-3">
@@ -104,29 +120,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script>
-        let socket = io.connect("http://127.0.0.1:5000/");
-        socket.on("connect", function () {
-            console.log("Sucessfully connected");
-            socket.emit("Connection successful!");
+        document.addEventListener('DOMContentLoaded', function () {
+            let elems = document.querySelectorAll('select');
+            let instances = M.FormSelect.init(elems, {});
         });
-        socket.on("message", (msg) => {
-            console.log("___", msg);
-            document.getElementById("append-here").innerHTML += `<li class="collection-item">${msg}</li>`;
-        });
+        // $(document).ready(function(){
+        //     $('select').formSelect();
+        // });
         document.getElementById("content").onchange = function () {
             let reader = new FileReader();
-            reader.onload = function (e) {                
+            reader.onload = function (e) {
                 document.getElementById("content-img").src = e.target.result;
             };
             reader.readAsDataURL(this.files[0]);
-        }; 
+        };
         document.getElementById("style").onchange = function () {
             let reader = new FileReader();
             reader.onload = function (e) {
                 document.getElementById("style-img").src = e.target.result;
             };
             reader.readAsDataURL(this.files[0]);
-        }; 
+        };
+        let socket = io.connect("http://127.0.0.1:5000/");
+        socket.on("connect", function () {
+            console.log("Sucessfully connected");
+            socket.emit("Connection successful!");
+        });
+        socket.on("message", curr => {
+            let total = document.getElementById("iterations").value;
+            let txt = String((curr / total) * 100) + "%";
+            // console.log(curr, total, txt);
+            document.getElementsByClassName("determinate")[0].style.width = txt;
+            document.getElementById("change").innerText = txt;
+        });
     </script>
 </body>
 
