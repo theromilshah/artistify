@@ -8,13 +8,14 @@ from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.applications.vgg19 import VGG19
 from tensorflow.python.keras.applications.vgg19 import preprocess_input
 from tensorflow.python.keras.preprocessing.image import load_img, img_to_array
+from random import randint
 
 
 model = VGG19(include_top=False, weights='imagenet')
 model.trainable = False
 
 def load_and_process_image(image_path):
-    img = load_img(image_path)
+    img = load_img(image_path, target_size = (224, 224))
     img = img_to_array(img)
     img = preprocess_input(img)
     img = expand_dims(img, axis=0)
@@ -29,14 +30,15 @@ def deprocess(x):
     return x
 
 
-def save_image(image):
+def save_image(image, content_path, style_path):
     if len(image.shape) == 4:
         img = squeeze(image, axis = 0)
 
     img = deprocess(img)
     im = fromarray(img)
-    im.save('./static/final.png')
-    return "final.png"
+    filename = "final" + str(randint(10001, 999999)) + ".png"
+    im.save('./static/'+filename)
+    return content_path, style_path, filename
 
 
 style_layers = ['block1_conv1',  'block3_conv1', 'block5_conv1']
@@ -109,6 +111,6 @@ def training_loop(content_path, style_path, iterations=5, a=10., b=20.):
         generated_images.append(generated.numpy())
         yield ('Cost at {}: {}. Time elapsed: {}'.format(i, J_total, time_taken))
     
-    path = save_image(best_image)
+    path = save_image(best_image, content_path, style_path)
     print(">>>", path)
     yield (path)

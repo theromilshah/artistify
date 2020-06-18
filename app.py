@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for
 from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO, send, emit
+from flask_material import Material  
+
 
 from nst import training_loop
 
@@ -11,10 +13,11 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
+Material(app)  
 app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 def allowed_file(filename):

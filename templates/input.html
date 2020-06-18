@@ -4,34 +4,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <title>Artistify</title>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+    </style>
 </head>
 
 <body>
+    <nav class="grey darken-3" role="navigation">
+        <div class="nav-wrapper container">
+            <a id="logo-container" href="/" class="brand-logo center">Artistify</a>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="section">
+            <form method="POST" enctype=multipart/form-data action="/">
+                <div class="row">
+                    <div class="col s12 m6">
+                        <label for="">Upload Content Image:</label>
+                        <div class="file-field input-field">
+                            <div class="btn grey darken-3">
+                                <span>Content Image</span>
+                                <input type="file" name="content" id="content">
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <label for="">Upload Style Image:</label>
+                        <div class="file-field input-field">
+                            <div class="btn grey darken-3">
+                                <span>Style Image</span>
+                                <input type="file" name="style" id="style">
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m6">
+                        <img src="" alt="" id="content-img">
+                    </div>
+                    <div class="col s12 m6">
+                        <img src="" alt="" id="style-img">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 center">
+                        <input type="submit" value="Generate Image" class="btn grey darken-3">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="section">
+            <ul class="collections" id="append-here"></ul>
+        </div>
+    </main>
+    <footer class="page-footer grey darken-3">
+        <div class="container valign-wrapper">
+            <div class="row">
+                <ul>
+                    <li class="col s3">
+                        <a target="_blank" class="white-text" href="https://github.com/romilshah525">Github</a>
+                    </li>
+                    <li class="col s3">
+                        <a target="_blank" class="white-text" href="mailto:romilshah525@gmail.com">Email</a>
+                    </li>
+                    <li class="col s3">
+                        <a target="_blank" class="white-text"
+                            href="https://linkedin.com/in/romil-shah-990303150">LinkedIn</a>
+                    </li>
+                    <li class="col s3">
+                        <a target="_blank" class="white-text"
+                            href="https://www.instagram.com/romilshah525">Instagram</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <div class="container center">
+                &copy; Made with <span style="color: rgb(245, 35, 35);">&#10084;</span> by
+                <a href="https://github.com/romilshah525/" target="_blank">Romil Shah</a>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
-        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script>
-        $(document).ready(function () {
-            let socket = io.connect("http://127.0.0.1:5000");
-            socket.on("connect", function () {
-                console.log("Sucessfully connected");
-                socket.emit("Connection successful!");
-            });
-            socket.on("message", (msg) => {
-                console.log("___", msg);
-                document.getElementById("temp").innerHTML += `<li>${msg}</li>`;
-            });
+        let socket = io.connect("http://127.0.0.1:5000/");
+        socket.on("connect", function () {
+            console.log("Sucessfully connected");
+            socket.emit("Connection successful!");
         });
+        socket.on("message", (msg) => {
+            console.log("___", msg);
+            document.getElementById("append-here").innerHTML += `<li class="collection-item">${msg}</li>`;
+        });
+        document.getElementById("content").onchange = function () {
+            let reader = new FileReader();
+            reader.onload = function (e) {                
+                document.getElementById("content-img").src = e.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+        }; 
+        document.getElementById("style").onchange = function () {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("style-img").src = e.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+        }; 
     </script>
-    <form method="POST" enctype=multipart/form-data action="/">
-        <input type=file name="content" id="content">
-        <br>
-        <input type=file name="style" id="style">
-        <br>
-        <input type=submit value=Upload>
-        <ul id="temp"></ul>
-    </form>
 </body>
 
 </html>
