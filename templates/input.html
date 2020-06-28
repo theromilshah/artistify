@@ -2,158 +2,188 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <title>Artistify</title>
-    <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<title>Artistify</title>
+	<style>
+		body {
+			display: flex;
+			min-height: 100vh;
+			flex-direction: column;
+		}
 
-        main {
-            flex: 1 0 auto;
-        }
-    </style>
+		main {
+			flex: 1 0 auto;
+		}
+	</style>
 </head>
 
 <body>
-    <nav class="grey darken-3" role="navigation">
-        <div class="nav-wrapper container">
-            <a id="logo-container" href="/" class="brand-logo center">Artistify</a>
-        </div>
-    </nav>
-    <main class="container">
-        <div class="section">
-            <form method="POST" enctype=multipart/form-data action="/">
-                <div class="row">
-                    <div class="col s12 m6">
-                        <label for="">Upload Content Image:</label>
-                        <div class="file-field input-field">
-                            <div class="btn grey darken-3">
-                                <span>Content Image</span>
-                                <input type="file" name="content" id="content">
-                            </div>
-                            <div class="file-path-wrapper">
-                                <input class="file-path validate" type="text">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col s12 m6">
-                        <label for="">Upload Style Image:</label>
-                        <div class="file-field input-field">
-                            <div class="btn grey darken-3">
-                                <span>Style Image</span>
-                                <input type="file" name="style" id="style">
-                            </div>
-                            <div class="file-path-wrapper">
-                                <input class="file-path validate" type="text">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s12 m6">
-                        <img src="" alt="" id="content-img">
-                    </div>
-                    <div class="col s12 m6">
-                        <img src="" alt="" id="style-img">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s6 center">
-                        <div class="input-field col s12">
-                            <select id="iterations" name="iterations">
-                                <option value="5" selected>5</option>
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="30">30</option>
-                            </select>
-                            <label>Select Epochs</label>
-                        </div>
-                    </div>
-                    <div class="col s16 center">
-                        <input type="submit" value="Generate Image" class="btn grey darken-3">
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="section">
-            <label for="">Training Progress : <span id="change"></span></label>
-            <div class="progress">
-                <div class="determinate" style="width: 0%"></div>
-            </div>
-        </div>
-    </main>
-    <footer class="page-footer grey darken-3">
-        <div class="container valign-wrapper">
-            <div class="row">
-                <ul>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text" href="https://github.com/romilshah525">Github</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text" href="mailto:romilshah525@gmail.com">Email</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text"
-                            href="https://linkedin.com/in/romil-shah-990303150">LinkedIn</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text"
-                            href="https://www.instagram.com/romilshah525">Instagram</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-copyright">
-            <div class="container center">
-                &copy; Made with <span style="color: rgb(245, 35, 35);">&#10084;</span> by
-                <a href="https://github.com/romilshah525/" target="_blank">Romil Shah</a>
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let elems = document.querySelectorAll('select');
-            let instances = M.FormSelect.init(elems, {});
-        });
-        // $(document).ready(function(){
-        //     $('select').formSelect();
-        // });
-        document.getElementById("content").onchange = function () {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById("content-img").src = e.target.result;
-            };
-            reader.readAsDataURL(this.files[0]);
-        };
-        document.getElementById("style").onchange = function () {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById("style-img").src = e.target.result;
-            };
-            reader.readAsDataURL(this.files[0]);
-        };
-        let socket = io.connect("http://127.0.0.1:5000/");
-        socket.on("connect", function () {
-            console.log("Sucessfully connected");
-            socket.emit("Connection successful!");
-        });
-        socket.on("message", curr => {
-            let total = document.getElementById("iterations").value;
-            let txt = String((curr / total) * 100) + "%";
-            // console.log(curr, total, txt);
-            document.getElementsByClassName("determinate")[0].style.width = txt;
-            document.getElementById("change").innerText = txt;
-        });
-    </script>
+	<nav class="grey darken-3" role="navigation">
+		<div class="nav-wrapper container">
+			<a id="logo-container" href="/" class="brand-logo center">Artistify</a>
+		</div>
+	</nav>
+	<main class="container">
+		<div class="section">
+			<form method="POST" enctype=multipart/form-data action="/">
+				<div class="row">
+					<div class="col s12 m6">
+						<label for="">Upload Content Image:</label>
+						<div class="file-field input-field">
+							<div class="btn grey darken-3">
+								<span>Content Image</span>
+								<input type="file" name="content" id="content">
+							</div>
+							<div class="file-path-wrapper">
+								<input class="file-path validate" type="text">
+							</div>
+						</div>
+					</div>
+					<div class="col s12 m6">
+						<label for="">Upload Style Image:</label>
+						<div class="file-field input-field">
+							<div class="btn grey darken-3">
+								<span>Style Image</span>
+								<input type="file" name="style" id="style">
+							</div>
+							<div class="file-path-wrapper">
+								<input class="file-path validate" type="text">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s12 m6">
+						<img src="" alt="" id="content-img">
+					</div>
+					<div class="col s12 m6">
+						<img src="" alt="" id="style-img">
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-field col s3 m6">
+						<select id="iterations" name="iterations">
+							<option value="5" selected>5</option>
+							<option value="10">10</option>
+							<option value="15">15</option>
+							<option value="20">20</option>
+							<option value="25">25</option>
+							<option value="30">30</option>
+						</select>
+						<label>Select Iterations</label>
+					</div>
+					<div class="input-field col s3 m6">
+						<select id="lr" name="lr">
+							<option value="0.001" selected>0.001</option>
+							<option value="0.005">0.005</option>
+							<option value="0.05">0.05</option>
+							<option value="0.01">0.01</option>
+							<option value="0.1">0.1</option>
+							<option value="0.5">0.5</option>
+						</select>
+						<label>Select Learning Rate</label>
+					</div>
+					<div class="input-field col s3 m6">
+						<select id="alpha" name="alpha">
+							<option value="5" >5</option>
+							<option value="10">10</option>
+							<option value="12" selected>12</option>
+							<option value="17">17</option>
+							<option value="20">20</option>
+							<option value="25">25</option>
+						</select>
+						<label>Select Alpha</label>
+					</div>
+					<div class="input-field col s3 m6">
+						<select id="beta" name="beta">
+							<option value="5" selected>5</option>
+							<option value="10">10</option>
+							<option value="12">12</option>
+							<option value="17">17</option>
+							<option value="20" selected>20</option>
+							<option value="25">25</option>
+						</select>
+						<label>Select Beta</label>
+					</div>
+				</div>
+				<div class="row s12 center">
+					<input type="submit" value="Generate Image" class="btn grey darken-3">
+				</div>
+			</form>
+		</div>
+		<div class="section">
+			<label for="">Image Styling Progress : <span id="change"></span></label>
+			<div class="progress">
+				<div class="determinate" style="width: 0%"></div>
+			</div>
+		</div>
+	</main>
+	<footer class="page-footer grey darken-3">
+		<div class="container valign-wrapper">
+			<div class="row">
+				<ul>
+					<li class="col s3">
+						<a target="_blank" class="white-text" href="https://github.com/romilshah525">Github</a>
+					</li>
+					<li class="col s3">
+						<a target="_blank" class="white-text" href="mailto:romilshah525@gmail.com">Email</a>
+					</li>
+					<li class="col s3">
+						<a target="_blank" class="white-text"
+							href="https://linkedin.com/in/romil-shah-990303150">LinkedIn</a>
+					</li>
+					<li class="col s3">
+						<a target="_blank" class="white-text"
+							href="https://www.instagram.com/romilshah525">Instagram</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer-copyright">
+			<div class="container center">
+				&copy; Made with <span style="color: rgb(245, 35, 35);">&#10084;</span> by
+				<a href="https://github.com/romilshah525/" target="_blank">Romil Shah</a>
+			</div>
+		</div>
+	</footer>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			let elems = document.querySelectorAll('select');
+			let instances = M.FormSelect.init(elems, {});
+		});
+		// $(document).ready(function(){
+		//     $('select').formSelect();
+		// });
+		document.getElementById("content").onchange = function () {
+			let reader = new FileReader();
+			reader.onload = function (e) {
+				document.getElementById("content-img").src = e.target.result;
+			};
+			reader.readAsDataURL(this.files[0]);
+		};
+		document.getElementById("style").onchange = function () {
+			let reader = new FileReader();
+			reader.onload = function (e) {
+				document.getElementById("style-img").src = e.target.result;
+			};
+			reader.readAsDataURL(this.files[0]);
+		};
+		let socket = io.connect("http://127.0.0.1:5000/");
+		socket.on("connect", function () {
+			console.log("Sucessfully connected");
+			socket.emit("Connection successful!");
+		});
+		socket.on("message", curr => {
+			let total = document.getElementById("iterations").value;
+			let txt = String((curr / total) * 100) + "%";
+			document.getElementsByClassName("determinate")[0].style.width = txt;
+			document.getElementById("change").innerText = txt;
+		});
+	</script>
 </body>
 
 </html>
