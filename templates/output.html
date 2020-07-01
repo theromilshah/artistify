@@ -1,109 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
     <title>Artistify</title>
     <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
+      body {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
 
-        main {
-            flex: 1 0 auto;
-        }
+      main {
+        flex: 1 0 auto;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <nav class="grey darken-3" role="navigation">
-        <div class="nav-wrapper container">
-            <a id="logo-container" href="/" class="brand-logo center">Artistify</a>
-        </div>
+      <div class="nav-wrapper container">
+        <a id="logo-container" href="/" class="brand-logo center">Artistify</a>
+      </div>
     </nav>
     <main class="container section">
-        <div class="row center">
-            <div class="col s12 m4">
-                <img src="{{ content_path }}" alt="">
-                <!-- <img src="../uploads/content.jpg" alt=""> -->
-            </div>
-            <div class="col s12 m4">
-                <img src="{{ style_path }}" alt="">
-                <!-- <img src="../uploads/style.jpg" alt=""> -->
-            </div>
-            <div class="col s12 m4">
-                <img src="{{ generated_path }}" alt="">
-                <!-- <img src="../static/final.png" alt=""> -->
-            </div>
+      <div class="row center">
+        <div class="col s12 m4">
+          <img src="{{ content_path }}" alt="" />
+          <label for="content">Content Image</label>
         </div>
-        <div class="row center">
-            <div class="col s12 m4">Content Image</div>
-            <div class="col s12 m4">Style Image</div>
-            <div class="col s12 m4">Generated Image</div>
+        <div class="col s12 m4">
+          <img src="{{ style_path }}" alt="" />
+          <label for="style">Style Image</label>
         </div>
-        <div class="section">
-            <ul class="collections" id="append-here"></ul>
+        <div class="col s12 m4">
+          <img src="{{ generated_path }}" alt="" />
+          <label for="generated">Generated Image</label>
         </div>
+      </div>
     </main>
     <footer class="page-footer grey darken-3">
-        <div class="container valign-wrapper">
-            <div class="row">
-                <ul>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text" href="https://github.com/romilshah525">Github</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text" href="mailto:romilshah525@gmail.com">Email</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text"
-                            href="https://linkedin.com/in/romil-shah-990303150">LinkedIn</a>
-                    </li>
-                    <li class="col s3">
-                        <a target="_blank" class="white-text"
-                            href="https://www.instagram.com/romilshah525">Instagram</a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container valign-wrapper">
+        <div class="row">
+          <ul>
+            <li class="col s3">
+              <a
+                target="_blank"
+                class="white-text"
+                href="https://github.com/romilshah525"
+                >Github</a
+              >
+            </li>
+            <li class="col s3">
+              <a
+                target="_blank"
+                class="white-text"
+                href="mailto:romilshah525@gmail.com"
+                >Email</a
+              >
+            </li>
+            <li class="col s3">
+              <a
+                target="_blank"
+                class="white-text"
+                href="https://linkedin.com/in/romil-shah-990303150"
+                >LinkedIn</a
+              >
+            </li>
+            <li class="col s3">
+              <a
+                target="_blank"
+                class="white-text"
+                href="https://www.instagram.com/romilshah525"
+                >Instagram</a
+              >
+            </li>
+          </ul>
         </div>
-        <div class="footer-copyright">
-            <div class="container center">
-                &copy; Made with <span style="color: rgb(245, 35, 35);">&#10084;</span> by
-                <a href="https://github.com/romilshah525/" target="_blank">Romil Shah</a>
-            </div>
+      </div>
+      <div class="footer-copyright">
+        <div class="container center">
+          &copy; Made with
+          <span style="color: rgb(245, 35, 35);">&#10084;</span> by
+          <a href="https://github.com/romilshah525/" target="_blank"
+            >Romil Shah</a
+          >
         </div>
+      </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script>
-        let socket = io.connect("http://127.0.0.1:5000/");
-        socket.on("connect", function () {
-            console.log("Sucessfully connected");
-            socket.emit("Connection successful!");
-        });
-        socket.on("message", (msg) => {
-            console.log("___", msg);
-            document.getElementById("append-here").innerHTML += `<li class="collection-item">${msg}</li>`;
-        });
-        document.getElementById("content").onchange = function () {
-            let reader = new FileReader();
-            reader.onload = function (e) {                
-                document.getElementById("content-img").src = e.target.result;
-            };
-            reader.readAsDataURL(this.files[0]);
-        }; 
-        document.getElementById("style").onchange = function () {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById("style-img").src = e.target.result;
-            };
-            reader.readAsDataURL(this.files[0]);
-        }; 
-    </script> -->
-</body>
-
+  </body>
 </html>

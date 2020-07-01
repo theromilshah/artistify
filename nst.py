@@ -18,7 +18,7 @@ class NeuralStyleTransfer(object):
         self.initialize_models_and_layers()
         self.set_paramers_and_hyper_parameters()
 
-    def set_paramers_and_hyper_parameters(self, iterations=2, alpha=10., beta=20., lr=0.01):
+    def set_paramers_and_hyper_parameters(self, iterations=2, alpha=5., beta=10., lr=3.14):
         self.iterations = iterations
         self.alpha = alpha
         self.beta = beta
@@ -28,8 +28,7 @@ class NeuralStyleTransfer(object):
     def initialize_models_and_layers(self):
         self.model = VGG19(include_top=False, weights='imagenet')
         self.model.trainable = False
-        # self.style_layers = ['block1_conv1', 'block3_conv1', 'block5_conv1']
-        self.style_layers = ['block5_conv1']
+        self.style_layers = ['block1_conv1', 'block3_conv1', 'block5_conv1']
         self.content_layer = 'block5_conv2'
         self.content_model = Model(inputs=self.model.input,
                                    outputs=self.model.get_layer(self.content_layer).output)
