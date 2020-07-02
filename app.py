@@ -42,11 +42,13 @@ def upload_file():
             style_filename = secure_filename(style.filename)
             style_filepath = create_path(app.config['UPLOAD_FOLDER'], style_filename)
             style.save(style_filepath)
-            
+            i = 0
             nst = NeuralStyleTransfer(content_filepath, style_filepath)
             nst.set_paramers_and_hyper_parameters(iterations, alpha=alpha, beta=beta, lr=lr)
             for val, is_training in nst.train():
-                if is_training: handle_message(val+1)
+                if is_training:
+                    i+=1
+                    handle_message(i+1)
                 else: fname = nst.save_image(val)
             return render_template("output.html", content_path=url_for(app.config['UPLOAD_FOLDER'], filename=content_filename),
                                                     style_path=url_for(app.config['UPLOAD_FOLDER'], filename=style_filename),

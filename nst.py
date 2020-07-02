@@ -18,7 +18,7 @@ class NeuralStyleTransfer(object):
         self.initialize_models_and_layers()
         self.set_paramers_and_hyper_parameters()
 
-    def set_paramers_and_hyper_parameters(self, iterations=2, alpha=5., beta=10., lr=3.14):
+    def set_paramers_and_hyper_parameters(self, iterations=2, alpha=10., beta=20., lr=0.01):
         self.iterations = iterations
         self.alpha = alpha
         self.beta = beta
@@ -28,8 +28,10 @@ class NeuralStyleTransfer(object):
     def initialize_models_and_layers(self):
         self.model = VGG19(include_top=False, weights='imagenet')
         self.model.trainable = False
-        self.style_layers = ['block1_conv1', 'block3_conv1', 'block5_conv1']
+        self.style_layers = ['block1_conv1','block2_conv1','block3_conv1', 'block4_conv1', 'block5_conv1']
         self.content_layer = 'block5_conv2'
+        # self.style_layers = ['block1_conv2', 'block2_conv2', 'block3_conv3', 'block4_conv3', 'block5_conv3']
+        # self.content_layer = 'block2_conv2'
         self.content_model = Model(inputs=self.model.input,
                                    outputs=self.model.get_layer(self.content_layer).output)
         self.style_models = [Model(inputs=self.model.input,
@@ -42,6 +44,12 @@ class NeuralStyleTransfer(object):
         img = expand_dims(img, axis=0)
         return img
 
+    def get_model_layers(self):
+        self.layers = []
+        for layer in self.model.layers:
+            self.layers.append(layer.name)
+        return self.layers
+        
     def deprocess(self, x):
         x[:, :, 0] += 103.939
         x[:, :, 1] += 116.779
@@ -104,7 +112,7 @@ class NeuralStyleTransfer(object):
                 self.best_image = generated.numpy()
 
             self.generated_images.append(generated.numpy())
-            yield i, is_training
+            yield J_total, is_training
             
         is_training = False
         yield self.best_image, is_training
