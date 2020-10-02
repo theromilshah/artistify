@@ -1,6 +1,6 @@
 from numpy import expand_dims, clip, squeeze
 from PIL.Image import fromarray
-from random import randint
+from time import time
 
 import tensorflow as tf
 from tensorflow.python.keras.models import Model
@@ -8,15 +8,19 @@ from tensorflow.python.keras.applications.vgg19 import VGG19
 from tensorflow.python.keras.applications.vgg19 import preprocess_input
 from tensorflow.python.keras.preprocessing.image import load_img, img_to_array
 
+
 class NeuralStyleTransfer(object):
 
     def __init__(self, content_img, style_img):
         self.content_img = self.load_and_process_image(content_img)
         self.style_img = self.load_and_process_image(style_img)
         self.generated_images = []
-        self.best_img = None
+        self.best_image = None
+        self.best_cost = 1e14+0.1
+        self.is_training = False
         self.initialize_models_and_layers()
         self.set_paramers_and_hyper_parameters()
+        self.generated = None
 
     def set_paramers_and_hyper_parameters(self, iterations=2, alpha=10., beta=20., lr=0.01):
         self.iterations = iterations
@@ -28,10 +32,9 @@ class NeuralStyleTransfer(object):
     def initialize_models_and_layers(self):
         self.model = VGG19(include_top=False, weights='imagenet')
         self.model.trainable = False
-        self.style_layers = ['block1_conv1','block2_conv1','block3_conv1', 'block4_conv1', 'block5_conv1']
+        self.style_layers = ['block1_conv1', 'block2_conv1',
+                             'block3_conv1', 'block4_conv1', 'block5_conv1']
         self.content_layer = 'block5_conv2'
-        # self.style_layers = ['block1_conv2', 'block2_conv2', 'block3_conv3', 'block4_conv3', 'block5_conv3']
-        # self.content_layer = 'block2_conv2'
         self.content_model = Model(inputs=self.model.input,
                                    outputs=self.model.get_layer(self.content_layer).output)
         self.style_models = [Model(inputs=self.model.input,
@@ -49,7 +52,7 @@ class NeuralStyleTransfer(object):
         for layer in self.model.layers:
             self.layers.append(layer.name)
         return self.layers
-        
+
     def deprocess(self, x):
         x[:, :, 0] += 103.939
         x[:, :, 1] += 116.779
@@ -63,7 +66,7 @@ class NeuralStyleTransfer(object):
             img = squeeze(image, axis=0)
         img = self.deprocess(img)
         im = fromarray(img)
-        filename = "final" + str(randint(10001, 999999)) + ".png"
+        filename = "final" + str(int(time())) + ".png"
         im.save('./static/'+filename)
         return filename
 
@@ -92,27 +95,39 @@ class NeuralStyleTransfer(object):
         return J_style
 
     def train(self):
-        
-        generated = tf.Variable(self.content_img, dtype=tf.float32)
-        best_cost = 1e12+0.1
-        is_training = True
-        
+        self.generated = tf.Variable(self.content_img, dtype=tf.float32)
+        self.is_training = True
+        self.best_image = self.generated.numpy()
         for i in range(self.iterations):
-
             with tf.GradientTape() as tape:
-                J_content = self.content_cost(self.content_img, generated)
-                J_style = self.style_cost(self.style_img, generated)
+                J_content = self.content_cost(self.content_img, self.generated)
+                J_style = self.style_cost(self.style_img, self.generated)
                 J_total = self.alpha * J_content + self.beta * J_style
+            grads = tape.gradient(J_total, self.generated)
+            self.optimizer.apply_gradients([(grads, self.generated)])
+            print(f"J_total: {J_total}")
+            if J_total < self.best_cost:
+                self.best_cost = J_total
+                self.best_image = self.generated.numpy()
+            self.generated_images.append(self.generated.numpy())
+            yield J_total, self.is_training
+        self.is_training = False
+        yield self.best_image, self.is_training
 
-            grads = tape.gradient(J_total, generated)
-            self.optimizer.apply_gradients([(grads, generated)])
-
-            if J_total < best_cost:
-                best_cost = J_total
-                self.best_image = generated.numpy()
-
-            self.generated_images.append(generated.numpy())
-            yield J_total, is_training
-            
-        is_training = False
-        yield self.best_image, is_training
+    def continue_training(self, additional_iterations=10):
+        self.is_training = True
+        for i in range(additional_iterations):
+            with tf.GradientTape() as tape:
+                J_content = self.content_cost(self.content_img, self.generated)
+                J_style = self.style_cost(self.style_img, self.generated)
+                J_total = self.alpha * J_content + self.beta * J_style
+            grads = tape.gradient(J_total, self.generated)
+            self.optimizer.apply_gradients([(grads, self.generated)])
+            print(f"J_total: {J_total}")
+            if J_total < self.best_cost:
+                self.best_cost = J_total
+                self.best_image = self.generated.numpy()
+            self.generated_images.append(self.generated.numpy())
+            yield J_total, self.is_training
+        self.is_training = False
+        yield self.best_image, self.is_training
